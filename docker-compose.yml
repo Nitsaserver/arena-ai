@@ -1,0 +1,115 @@
+# =====================================
+# docker-compose.yml — Arena Project
+# =====================================
+
+services:
+  # 🗄️ MySQL Database
+  db:
+    image: mysql:8.0
+    container_name: arena_db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: Google@12345
+      MYSQL_DATABASE: arena_db
+      MYSQL_USER: arena_user
+      MYSQL_PASSWORD: Arena@123
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - arena_net
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -p$MYSQL_ROOT_PASSWORD || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  # ⚙️ FastAPI Backend
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: arena_backend
+    ports:
+      - "8000:8000"
+    environment:
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_USER=arena_user
+      - DB_PASSWORD=Arena@123
+      - DB_NAME=arena_db
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - arena_net
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8000/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # 🔴 Red Agent
+  red_agent:
+    build:
+      context: ./red_agents
+      dockerfile: Dockerfile
+    container_name: arena_red_agent
+    depends_on:
+      backend:
+        condition: service_healthy
+    environment:
+      - ARENA_EVENT_URL=http://backend:8000/event
+      - BRUTE_ATTEMPTS=40
+      - BRUTE_PAUSE=0.3
+    restart: on-failure
+    networks:
+      - arena_net
+
+  # 🔵 Blue Agent
+  blue_agent:
+    build:
+      context: ./blue_agents
+      dockerfile: Dockerfile
+    container_name: arena_blue_agent
+    depends_on:
+      backend:
+        condition: service_healthy
+    environment:
+      - ARENA_API=http://backend:8000
+      - BLUE_PAUSE=2.0
+    restart: on-failure
+    networks:
+      - arena_net
+
+  # 🕹️ Orchestrator
+  orchestrator:
+    build:
+      context: ./orchestrator
+      dockerfile: Dockerfile
+    container_name: arena_orchestrator
+    depends_on:
+      backend:
+        condition: service_healthy
+      red_agent:
+        condition: service_started
+      blue_agent:
+        condition: service_started
+    environment:
+      - BACKEND_URL=http://backend:8000
+      - ORCH_ROUNDS=5
+      - ORCH_PAUSE=10
+    restart: on-failure
+    networks:
+      - arena_net
+
+# Shared Resources
+volumes:
+  db_data:
+
+networks:
+  arena_net:
+    driver: bridge
