@@ -1,28 +1,54 @@
-#==========================================================
-# ✅ Final Backend Dockerfile (for context = ./backend)
 # ==========================================================
+# Arena-AI Backend Dockerfile
+# ==========================================================
+
 FROM python:3.11-slim
 
 WORKDIR /app
-# Install system deps
+
+# --------------------------
+# System dependencies
+# --------------------------
 RUN apt-get update && apt-get install -y \
-    curl \
-    default-libmysqlclient-dev \
     gcc \
+    curl \
+    pkg-config \
+    ca-certificates \
+    default-libmysqlclient-dev \
+ && update-ca-certificates \
  && rm -rf /var/lib/apt/lists/*
 
-# Copy and install Python dependencies
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt -i https://pypi.org/simple --timeout=200
 
-# Copy backend code
-COPY . /app/backend
 
-# Add Python path
+
+# --------------------------
+# Python dependencies (BACKEND ONLY)
+# --------------------------
+# 🔥 IMPORTANT: use backend/requirements.txt
+COPY backend/requirements.txt .
+
+RUN pip install --no-cache-dir --upgrade pip \
+    && pip install --no-cache-dir -r requirements.txt
+
+# --------------------------
+# Copy backend source code
+# --------------------------
+COPY backend/ /app/backend
+
+# --------------------------
+# Environment
+# --------------------------
 ENV PYTHONPATH=/app
+ENV SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt
+ENV REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
 
-# Expose FastAPI port
+
+# --------------------------
+# FastAPI port
+# --------------------------
 EXPOSE 8000
 
-# Launch FastAPI app
-CMD ["uvicorn", "backend.app:app", "--host", "0.0.0.0", "--port", "8000"]
+# --------------------------
+# Run FastAPI app
+# --------------------------
+CMD ["uvicorn","backend.app:app","--host", "0.0.0.0","--port", "8000","--workers", "2"]

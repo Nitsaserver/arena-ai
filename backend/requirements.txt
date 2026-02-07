@@ -1,13 +1,26 @@
+# --- API ---
 fastapi
 uvicorn[standard]
+
+
+# --- Database ---
 sqlalchemy
-pymysql
+mysqlclient
 alembic
-scikit-learn
-pandas
-python-dotenv
-requests
-pytest
-cryptography
+
+# --- Vector Search ---
+faiss-cpu
 numpy
+joblib
+scikit-learn
+
+
+# --- HTTP (Ollama calls) ---
+requests
+
+# --- Utilities ---
+python-dotenv
 rich
+
+# --- Testing ---
+pytest
