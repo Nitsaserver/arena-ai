@@ -6,4 +6,9 @@ export default defineConfig({
   css: {
     postcss: "./postcss.config.js",
   },
+  base: "/arena-ai/",
+  build: {
+    outDir: "docs",
+    emptyOutDir: true,
+  },
 });

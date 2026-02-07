@@ -204,11 +204,14 @@ const AppShell: React.FC = () => {
 
 // -----------------------------
 // Export wrapped in Theme + Router
-// -----------------------------
 export default function App() {
   return (
-    <ThemeProvider theme={theme}>
-      <AppShell />
-    </ThemeProvider>
+    <BrowserRouter>
+      <ThemeProvider theme={theme}>
+        <AppShell />
+      </ThemeProvider>
+    </BrowserRouter>
   );
 }
+
+
