@@ -63,7 +63,7 @@ The platform is structured as a **modular multi-agent system**:
 
   * MySQL (logs, results)
 
-👉 *(Insert your architecture diagram image here)*
+👉 <p align="center"> <img src="assets/arch-arena-2-arena.png" width="800"/> </p>
 
 ---
 
@@ -78,7 +78,7 @@ The platform is structured as a **modular multi-agent system**:
 7. Detection pipeline runs ML models
 8. Results stored and returned to dashboard
 
-👉 *(Insert your sequence diagram here)*
+👉 <p align="center"> <img src="assets/sequence-diagram-arena.png" width="800"/> </p>
 
 ---
 
@@ -89,7 +89,7 @@ The platform is structured as a **modular multi-agent system**:
 * Logs → Detection Pipeline
 * Results → Database → Dashboard
 
-👉 *(Insert your data flow diagram here)*
+👉 <p align="center"> <img src="assets/data-flow-arena.png" width="800"/> </p>
 
 ---
 
@@ -103,7 +103,7 @@ The platform is structured as a **modular multi-agent system**:
   * Blue agents
   * Orchestrator
 
-👉 *(Insert docker diagram here)*
+👉 <p align="center"> <img src="assets/docker-agents-arena.png" width="800"/> </p>
 
 ---
 
@@ -172,12 +172,6 @@ docker-compose up --build
 
 ---
 
-## 📸 Demo
-
-👉 *(Add Loom or YouTube link here — REQUIRED)*
-
----
-
 ## 📈 Future Work
 
 * Real-time visualization dashboard
@@ -196,3 +190,5 @@ Open to contributions and ideas.
 ## 📬 Contact
 
 Reach out via GitHub or LinkedIn.
+Github: https://github.com/Nitsaserver
+LinkedIn: https://www.linkedin.com/in/nitsamehndiratta/
