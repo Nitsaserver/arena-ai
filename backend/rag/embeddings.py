@@ -5,14 +5,22 @@ EMBED_MODEL = "nomic-embed-text"
 
 
 class EmbeddingModel:
-    def embed(self, text: str):
+    def embed(self, texts):
         response = requests.post(
             OLLAMA_EMBED_URL,
             json={
                 "model": EMBED_MODEL,
-                "prompt": text
+                "input": texts if isinstance(texts, list) else [texts]
             },
             timeout=60
         )
         response.raise_for_status()
-        return response.json()["embedding"]
+        data = response.json()
+        print(f"Ollama response keys: {data.keys()}")
+        # Handle both "embedding" (single) and "embeddings" (multiple)
+        if "embeddings" in data:
+            return data["embeddings"]
+        elif "embedding" in data:
+            return [data["embedding"]]
+        else:
+            raise KeyError(f"Expected 'embeddings' or 'embedding' in response, got: {list(data.keys())}")

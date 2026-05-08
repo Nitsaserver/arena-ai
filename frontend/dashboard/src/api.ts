@@ -115,3 +115,50 @@ export async function retrainModel() {
 export function exportTrainingCSV() {
   window.location.href = `${API_BASE}/train/data/export`;
 }
+
+// ----------------------
+// RAG - EXPLAIN
+// ----------------------
+export async function explainWithRAG(question: string) {
+  const res = await fetch(`${API_BASE}/rag/api/explain`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ question }),
+  });
+  if (!res.ok) throw new Error("Failed to get RAG explanation");
+  return res.json();
+}
+
+// ----------------------
+// EVENTS
+// ----------------------
+export async function fetchEvents(limit: number = 10) {
+  const res = await fetch(`${API_BASE}/events?limit=${limit}`);
+  if (!res.ok) throw new Error("Failed to fetch events");
+  return res.json();
+}
+
+// ----------------------
+// BLOCKS
+// ----------------------
+export async function fetchBlocks() {
+  const res = await fetch(`${API_BASE}/blocks`);
+  if (!res.ok) throw new Error("Failed to fetch blocks");
+  return res.json();
+}
+
+export async function addBlock(ip: string, reason: string) {
+  const res = await fetch(`${API_BASE}/blocks`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ ip, reason }),
+  });
+  if (!res.ok) throw new Error("Failed to add block");
+  return res.json();
+}
+
+export async function removeBlock(ip: string) {
+  const res = await fetch(`${API_BASE}/blocks/${ip}`, { method: "DELETE" });
+  if (!res.ok) throw new Error("Failed to remove block");
+  return res.json();
+}
