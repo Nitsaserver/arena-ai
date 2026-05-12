@@ -29,8 +29,8 @@ services:
   # ⚙️ FastAPI Backend
   backend:
     build:
-      context: ./backend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: backend/Dockerfile
     container_name: arena_backend
     ports:
       - "8000:8000"
@@ -46,11 +46,12 @@ services:
     networks:
       - arena_net
     healthcheck:
-      test: ["CMD-SHELL", "curl -fsS http://localhost:8000/health || exit 1"]
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8000/docs || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 5
       start_period: 30s
+
 
   # 🔴 Red Agent
   red_agent:

@@ -4,6 +4,7 @@
     "@emotion/styled": "^11.14.1",
     "@mui/icons-material": "^7.3.4",
     "@mui/material": "^7.3.4",
+    "react-markdown": "^10.1.0",
     "uvicorn": "^0.0.1-security"
   }
 }

@@ -26,13 +26,21 @@ from datetime import datetime
 from .trainer import train_from_rows, load_saved_detector
 import pickle
 
+from backend.rag.service import rag_service
 
-
+from backend.api import explain
+from backend.api.rag import router as rag_router
 
 # --------------------------------------
 # ⚙️ App Initialization
 # --------------------------------------
 app = FastAPI(title="Arena API")
+app.include_router(
+    rag_router,
+    prefix="/rag",
+    tags=["RAG"]
+)
+
 
 @app.get("/health", tags=["System"])
 def health_check():
@@ -52,9 +60,8 @@ app.add_middleware(
 # --------------------------------------
 # 🩺 Health & Dashboard Routes
 # --------------------------------------
-@app.get("/health")
-def health_check():
-    return {"status": "ok"}
+
+
 
 @app.get("/dashboard", response_class=FileResponse)
 @app.get("/dashboard/", response_class=FileResponse)
@@ -339,8 +346,11 @@ class EventOut(BaseModel):
     dest_ip: Optional[str] = None
     action: str
     details: Optional[str] = None
-    score: float
+    score: float = 0.0
     flagged: bool
+
+
+
 
 
 class BlockIn(BaseModel):
@@ -365,30 +375,36 @@ def post_event(ev: EventIn, db: Session = Depends(get_db)):
     flagged = (score < THRESHOLD)
 
     db_obj = {
-        "src_ip": obj.get("ip"),
-        "dest_ip": None,
-        "action": obj.get("path", "unknown_action"),
-        "ts": obj["ts"],
-        "flagged": flagged,
-        "details": str(obj.get("payload", {})),
+    "src_ip": obj.get("ip"),                     # ✅ map correctly
+    "dest_ip": None,
+    "action": obj.get("path", "unknown"),
+    "ts": obj["ts"],
+    "flagged": int(flagged),
+    "details": json.dumps(obj.get("payload", {})),  # ✅ keep small
     }
+
+
 
     # ✅ Store the event in DB
     insert_event(db_obj)
 
     # ✅ NEW: Log training data automatically
+   # ⚡ FAST, non-blocking training insert (safe)
+    train_sample = {
+        "round_id": random.randint(1, 10),
+        "attacker_action": obj.get("path", "unknown"),
+        "defender_action": "block" if flagged else "allow",
+        "outcome": "failure" if flagged else "success",
+        "reward": -1.0 if flagged else 1.0,
+        "meta_data": None,  # 🚨 KEEP THIS SMALL
+    }
+
     try:
-        train_sample = {
-            "round_id": random.randint(1, 10),
-            "attacker_action": obj.get("path", "unknown"),
-            "defender_action": "block" if flagged else "allow",
-            "outcome": "failure" if flagged else "success",
-            "reward": -1.0 if flagged else 1.0,
-            "meta_data": str(obj),
-        }
-        insert_training_record(db, train_sample)
-    except Exception as e:
-        print(f"⚠️ Failed to insert training sample: {e}")
+        from .models import TrainingData
+        db.add(TrainingData(**train_sample))
+    except Exception:
+        pass
+
 
     # ✅ Handle anomaly blocking
     action = None
@@ -406,15 +422,19 @@ def get_events(limit: int = 100):
         {
             "id": r.id,
             "ts": r.ts,
-            "src_ip": r.src_ip,
+            "src_ip": r.src_ip,          # ✅ FIX
             "dest_ip": r.dest_ip,
             "action": r.action,
             "details": r.details,
             "score": getattr(r, "score", 0.0),
-            "flagged": r.flagged,
+            "flagged": bool(r.flagged),
         }
         for r in rows
     ]
+
+
+
+
 
 
 @app.get("/blocks")
@@ -603,10 +623,85 @@ def run_simulation(rounds: int = 5):
         time.sleep(0.5)
     return {"message": "Simulation completed", "rounds": results}
 
+class DetectIn(BaseModel):
+    ip: str
+    path: Optional[str] = None
+    payload: Optional[dict] = None
+    ml: Optional[float] = None
+    rep: Optional[float] = None
+
+    class Config:
+        extra = "allow"   # 👈 THIS is the key
+
+from fastapi import Request
+
+@app.post("/detect")
+async def detect(request: Request, db: Session = Depends(get_db)):
+    data = {}
+
+    try:
+        data = await request.json()
+    except:
+        pass
+
+    data.update(dict(request.query_params))
+
+    ip = (
+        data.get("ip")
+        or request.headers.get("x-forwarded-for")
+        or request.client.host
+    )
+
+    obj = {
+        "ip": ip,
+        "path": data.get("path", "/detect"),
+        "payload": data,
+        "rate": float(data.get("ml", 0.0)),
+    }
+
+    try:
+        score = detector.score(obj)
+    except Exception:
+        score = 0.0
+
+    flagged = score < THRESHOLD
+
+    safe_details = {
+    "path": data.get("path"),
+    "ml": data.get("ml"),
+    "rep": data.get("rep"),
+    "flagged": flagged,
+    }
+
+    insert_event({
+        "src_ip": ip,
+        "dest_ip": None,
+        "action": "detect",
+        "ts": time.time(),
+        "flagged": flagged,
+        "details": json.dumps(safe_details),
+    })
+
+
+    if flagged:
+        add_block(ip, reason="auto:detect")
+
+    return {
+        "ip": ip,
+        "flagged": flagged,
+        "score": score,
+        "action": "block" if flagged else "allow",
+    }
+
+
+
+
+
 # --------------------------------------
 BASE_DIR = Path(__file__).resolve().parent
 frontend_path = BASE_DIR / "frontend_dist"
 
+app.include_router(explain.router, prefix="/api")
 app.mount("/", StaticFiles(directory=frontend_path, html=True), name="frontend")
 
 

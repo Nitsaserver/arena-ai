@@ -22,7 +22,7 @@ DB_PORT = int(os.getenv("DB_PORT", 3306))
 # Encode password for URL safety
 encoded_password = quote_plus(DB_PASSWORD) 
 SQLALCHEMY_DATABASE_URL = (
-    f"mysql+pymysql://{DB_USER}:{encoded_password}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+    f"mysql+mysqldb://{DB_USER}:{encoded_password}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 )
 
 # Create the SQLAlchemy engine

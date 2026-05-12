@@ -6,6 +6,7 @@ import UsersTable from "./components/UsersTable";
 import TeamsTable from "./components/TeamsTable";
 import MatchesTable from "./components/MatchesTable";
 import MLDashboard from "./pages/MLDashboard";
+import RAGPage from "./pages/RAGPage";
 
 // -----------------------------
 // MUI Imports
@@ -39,6 +40,7 @@ import SportsKabaddiIcon from "@mui/icons-material/SportsKabaddi";
 import AutoGraphIcon from "@mui/icons-material/AutoGraph";
 import HistoryIcon from "@mui/icons-material/History";
 import LogoutIcon from "@mui/icons-material/Logout";
+import SmartToyIcon from "@mui/icons-material/SmartToy";
 
 // -----------------------------
 // Theme (black + neon technical accents)
@@ -113,6 +115,7 @@ const AppShell: React.FC = () => {
         <SidebarItem to="/teams" icon={<GroupWorkIcon />} label="Teams" />
         <SidebarItem to="/matches" icon={<SportsKabaddiIcon />} label="Matches" />
         <SidebarItem to="/ml" icon={<AutoGraphIcon />} label="ML Dashboard" />
+        <SidebarItem to="/rag" icon={<SmartToyIcon />} label="RAG Assistant" />
         <SidebarItem to="/history" icon={<HistoryIcon />} label="Training History" />
       </List>
 
@@ -193,6 +196,7 @@ const AppShell: React.FC = () => {
             <Route path="/teams" element={<TeamsTable />} />
             <Route path="/matches" element={<MatchesTable />} />
             <Route path="/ml" element={<MLDashboard />} />
+            <Route path="/rag" element={<RAGPage />} />
             <Route path="/history" element={<div><h3>Training History</h3></div>} />
             <Route path="*" element={<MLDashboard />} />
           </Routes>
