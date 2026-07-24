@@ -1,10 +1,7 @@
 import React, { useState } from "react";
 import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
 
-// External Components
-import UsersTable from "./components/UsersTable";
-import TeamsTable from "./components/TeamsTable";
-import MatchesTable from "./components/MatchesTable";
+
 import MLDashboard from "./pages/MLDashboard";
 import RAGPage from "./pages/RAGPage";
 
@@ -34,9 +31,7 @@ import {
 import { createTheme, ThemeProvider, styled } from "@mui/material/styles";
 import MenuIcon from "@mui/icons-material/Menu";
 import DashboardIcon from "@mui/icons-material/Dashboard";
-import PeopleIcon from "@mui/icons-material/People";
-import GroupWorkIcon from "@mui/icons-material/GroupWork";
-import SportsKabaddiIcon from "@mui/icons-material/SportsKabaddi";
+
 import AutoGraphIcon from "@mui/icons-material/AutoGraph";
 import HistoryIcon from "@mui/icons-material/History";
 import LogoutIcon from "@mui/icons-material/Logout";
@@ -60,7 +55,7 @@ const theme = createTheme({
     },
     text: {
       primary: "#e6eef6",
-      secondary: "#9fb3c8",
+
     },
   },
   typography: {
@@ -111,9 +106,6 @@ const AppShell: React.FC = () => {
 
       <List sx={{ p: 2 }}>
         <SidebarItem to="/" icon={<DashboardIcon />} label="Dashboard" />
-        <SidebarItem to="/users" icon={<PeopleIcon />} label="Users" />
-        <SidebarItem to="/teams" icon={<GroupWorkIcon />} label="Teams" />
-        <SidebarItem to="/matches" icon={<SportsKabaddiIcon />} label="Matches" />
         <SidebarItem to="/ml" icon={<AutoGraphIcon />} label="ML Dashboard" />
         <SidebarItem to="/rag" icon={<SmartToyIcon />} label="RAG Assistant" />
         <SidebarItem to="/history" icon={<HistoryIcon />} label="Training History" />
@@ -192,9 +184,6 @@ const AppShell: React.FC = () => {
         <Container maxWidth="xl">
           <Routes>
             <Route path="/" element={<MLDashboard />} />
-            <Route path="/users" element={<UsersTable />} />
-            <Route path="/teams" element={<TeamsTable />} />
-            <Route path="/matches" element={<MatchesTable />} />
             <Route path="/ml" element={<MLDashboard />} />
             <Route path="/rag" element={<RAGPage />} />
             <Route path="/history" element={<div><h3>Training History</h3></div>} />
